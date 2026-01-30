@@ -72,8 +72,7 @@
             height: 100%;
             object-fit: contain;
             object-position: center;
-            /* 最终版：中心圆心，左半侧圆形1/2裁剪（核心属性） */
-            clip-path: circle(50% at 25% 50%);
+            clip-path: circle(25% at 50% 50%);
             transform: scale(1); 
         }
 
@@ -101,29 +100,59 @@
 
         .page.active { display: block; }
 
-        /* 页面标题：右侧居中显示，与LOGO对齐 */
-        .page-title { 
-            font-size: 28px; 
-            color: var(--main-black);
-            margin: 0; 
-            text-align: center; 
-            flex: 1; 
+        /* 标题文字容器 - 仅保留居中效果，恢复默认字体大小 */
+        .title-text-container {
+            flex: 3;
+            max-width: 75%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            /* 核心：保持居中 */
+            align-items: center;
+            text-align: center;
+        }
+
+        /* 第一行固定标题 - 恢复原始默认大小24px，仅保留居中 */
+        .fixed-title {
+            font-size: 24px; /* 恢复原始默认值 */
             font-weight: 700;
+            color: var(--main-black);
+            margin-bottom: 8px;
+            line-height: 1.2;
             background: linear-gradient(90deg, var(--main-green-dark), var(--main-green));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100%; 
+            text-align: center; /* 保持居中 */
+            width: 100%;
         }
 
-        /* 移动端标题适配 */
+        /* 第二行页面标题 - 恢复原始默认大小22px，仅保留居中 */
+        .page-title { 
+            font-size: 22px; /* 恢复原始默认值 */
+            color: var(--main-black);
+            margin: 0; 
+            text-align: center; /* 保持居中 */
+            font-weight: 600;
+            background: linear-gradient(90deg, var(--main-green-dark), var(--main-green));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            width: 100%;
+        }
+
+        /* 移动端标题适配 - 恢复原始默认值，仅保留居中 */
         @media (max-width: 480px) {
-            .page-title {
-                font-size: 22px;
+            .title-text-container {
+                max-width: 100%;
                 text-align: center;
+            }
+            .fixed-title {
+                font-size: 20px; /* 恢复移动端原始默认值 */
+                text-align: center;
+            }
+            .page-title {
+                font-size: 18px; /* 恢复移动端原始默认值 */
             }
         }
 
@@ -428,13 +457,15 @@
 <body>
     <!-- 1. 比赛设置屏 -->
     <div class="page active" id="settingPage">
-        <!-- LOGO和标题栏容器 -->
         <div class="title-bar">
             <div class="logo-container">
                 <img src="https://p3-flow-imagex-download-sign.byteimg.com/tos-cn-i-a9rns2rl98/6c7618fdc3c2430c8bc802c9c9673f6f.png~tplv-a9rns2rl98-24:720:720.png?lk3s=8e244e95&rcl=2026013017331989720FACE872A22CF7BC&rrcfp=8a172a1a&x-expires=1770370399&x-signature=Hp4pr0nWdNpvMQUuxIIqLVmY1A4%3D" 
                     alt="集合啦LOGO" class="logo-img">
             </div>
-            <h1 class="page-title">比赛设置</h1>
+            <div class="title-text-container">
+                <div class="fixed-title">集合啦！年终羽毛球积分赛</div>
+                <h1 class="page-title">积分赛规则设置</h1>
+            </div>
         </div>
         <div class="form-item">
             <label class="form-label">赛制选择</label>
@@ -444,7 +475,7 @@
             </select>
         </div>
         <div class="form-item">
-            <label class="form-label">积分规则（自定义）</label>
+            <label class="form-label">胜局/负局积分值</label>
             <div class="score-rule-group">
                 <input type="number" id="winScore" placeholder="胜局每人得分" value="5" min="1">
                 <input type="number" id="loseScore" placeholder="输局每人得分" value="3" min="1">
@@ -460,7 +491,10 @@
                 <img src="https://p3-flow-imagex-download-sign.byteimg.com/tos-cn-i-a9rns2rl98/6c7618fdc3c2430c8bc802c9c9673f6f.png~tplv-a9rns2rl98-24:720:720.png?lk3s=8e244e95&rcl=2026013017331989720FACE872A22CF7BC&rrcfp=8a172a1a&x-expires=1770370399&x-signature=Hp4pr0nWdNpvMQUuxIIqLVmY1A4%3D" 
                     alt="集合啦LOGO" class="logo-img">
             </div>
-            <h1 class="page-title">手动添加对阵（双打）</h1>
+            <div class="title-text-container">
+                <div class="fixed-title">集合啦！年终羽毛球积分赛</div>
+                <h1 class="page-title">双打对阵表</h1>
+            </div>
         </div>
         
         <!-- 左半场队伍 -->
@@ -507,7 +541,10 @@
                 <img src="https://p3-flow-imagex-download-sign.byteimg.com/tos-cn-i-a9rns2rl98/6c7618fdc3c2430c8bc802c9c9673f6f.png~tplv-a9rns2rl98-24:720:720.png?lk3s=8e244e95&rcl=2026013017331989720FACE872A22CF7BC&rrcfp=8a172a1a&x-expires=1770370399&x-signature=Hp4pr0nWdNpvMQUuxIIqLVmY1A4%3D" 
                     alt="集合啦LOGO" class="logo-img">
             </div>
-            <h1 class="page-title">双打左右屏计分</h1>
+            <div class="title-text-container">
+                <div class="fixed-title">集合啦！年终羽毛球积分赛</div>
+                <h1 class="page-title">对阵局计分表</h1>
+            </div>
         </div>
         <div class="match-list" id="scoreMatchList"></div>
         <button class="btn btn-success" onclick="goToRankPage()">查看个人积分排名</button>
@@ -521,7 +558,10 @@
                 <img src="https://p3-flow-imagex-download-sign.byteimg.com/tos-cn-i-a9rns2rl98/6c7618fdc3c2430c8bc802c9c9673f6f.png~tplv-a9rns2rl98-24:720:720.png?lk3s=8e244e95&rcl=2026013017331989720FACE872A22CF7BC&rrcfp=8a172a1a&x-expires=1770370399&x-signature=Hp4pr0nWdNpvMQUuxIIqLVmY1A4%3D" 
                     alt="集合啦LOGO" class="logo-img">
             </div>
-            <h1 class="page-title">个人积分排名汇总</h1>
+            <div class="title-text-container">
+                <div class="fixed-title">集合啦！年终羽毛球积分赛</div>
+                <h1 class="page-title">个人积分汇总</h1>
+            </div>
         </div>
         <div class="rank-list" id="rankList">
             <div class="empty-tip">暂无积分数据，完成对阵计分后显示</div>
