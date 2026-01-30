@@ -72,7 +72,7 @@
             height: 100%;
             object-fit: contain;
             object-position: center;
-            clip-path: circle(25% at 50% 50%);
+            clip-path: circle(75% at 50% 50%); /* 核心修改：3/4比例裁剪（75%） */
             transform: scale(1); 
         }
 
@@ -84,51 +84,40 @@
             }
         }
 
-        /* 移动端核心适配：LOGO在上、文字在下，缩小间距 */
         @media (max-width: 480px) {
             .logo-container {
                 width: 120px; 
                 height: 120px;
-                margin-right: 0;
-                margin-bottom: 8px; /* 关键：缩小LOGO和文字的间距（原15px→8px） */
             }
             .title-bar {
-                flex-direction: column; /* 保持LOGO在上、文字在下 */
-                align-items: center; /* 整体居中 */
+                flex-direction: column; 
             }
-            /* 标题文字容器适配 */
+            .logo-container {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+            /* 移动端文字居中适配 - 修改点1：移除靠左样式，改为居中 */
             .title-text-container {
-                max-width: 100%;
-                text-align: center;
-                margin-top: 0; /* 额外确保无顶部间距 */
-            }
-            /* 标题字体适配 */
-            .fixed-title {
-                font-size: 18px; /* 适度调整字体大小，保持美观 */
-                text-align: center;
-                margin-bottom: 4px; /* 缩小两行标题的间距 */
-            }
-            .page-title {
-                font-size: 16px;
-                text-align: center;
+                align-items: center !important;
+                padding-left: 0 !important;
             }
         }
 
         .page.active { display: block; }
 
-        /* 标题文字容器 - 仅保留居中效果，恢复默认字体大小 */
+        /* 标题文字容器 - 核心修改2：改为居中对齐 */
         .title-text-container {
             flex: 3;
             max-width: 75%;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            /* 核心：保持居中 */
-            align-items: center;
-            text-align: center;
+            align-items: center; /* 改为居中对齐 */
+            text-align: center; /* 文字居中对齐 */
+            padding-left: 0; /* 移除左侧内边距 */
         }
 
-        /* 第一行固定标题 - 恢复原始默认大小24px，仅保留居中 */
+        /* 第一行固定标题 - 修改点3：文字居中对齐 */
         .fixed-title {
             font-size: 24px; /* 恢复原始默认值 */
             font-weight: 700;
@@ -139,22 +128,38 @@
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            text-align: center; /* 保持居中 */
+            text-align: center; /* 改为居中对齐 */
             width: 100%;
         }
 
-        /* 第二行页面标题 - 恢复原始默认大小22px，仅保留居中 */
+        /* 第二行页面标题 - 修改点4：文字居中对齐 */
         .page-title { 
             font-size: 22px; /* 恢复原始默认值 */
             color: var(--main-black);
             margin: 0; 
-            text-align: center; /* 保持居中 */
+            text-align: center; /* 改为居中对齐 */
             font-weight: 600;
             background: linear-gradient(90deg, var(--main-green-dark), var(--main-green));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
             width: 100%;
+        }
+
+        /* 移动端标题适配 - 修改点5：文字居中对齐 */
+        @media (max-width: 480px) {
+            .title-text-container {
+                max-width: 100%;
+                text-align: center;
+            }
+            .fixed-title {
+                font-size: 20px; /* 恢复移动端原始默认值 */
+                text-align: center; /* 改为居中对齐 */
+            }
+            .page-title {
+                font-size: 18px; /* 恢复移动端原始默认值 */
+                text-align: center; /* 改为居中对齐 */
+            }
         }
 
         .form-item { margin-bottom: 18px; }
@@ -465,7 +470,7 @@
             </div>
             <div class="title-text-container">
                 <div class="fixed-title">集合啦！年终羽毛球积分赛</div>
-                <h1 class="page-title">积分赛规则设置</h1>
+                <h1 class="page-title">比赛设置</h1>
             </div>
         </div>
         <div class="form-item">
@@ -476,7 +481,7 @@
             </select>
         </div>
         <div class="form-item">
-            <label class="form-label">胜局/负局积分值</label>
+            <label class="form-label">积分规则（自定义）</label>
             <div class="score-rule-group">
                 <input type="number" id="winScore" placeholder="胜局每人得分" value="5" min="1">
                 <input type="number" id="loseScore" placeholder="输局每人得分" value="3" min="1">
@@ -494,7 +499,7 @@
             </div>
             <div class="title-text-container">
                 <div class="fixed-title">集合啦！年终羽毛球积分赛</div>
-                <h1 class="page-title">双打对阵表</h1>
+                <h1 class="page-title">手动添加对阵（双打）</h1>
             </div>
         </div>
         
@@ -544,7 +549,7 @@
             </div>
             <div class="title-text-container">
                 <div class="fixed-title">集合啦！年终羽毛球积分赛</div>
-                <h1 class="page-title">对阵局计分表</h1>
+                <h1 class="page-title">双打左右屏计分</h1>
             </div>
         </div>
         <div class="match-list" id="scoreMatchList"></div>
@@ -561,7 +566,7 @@
             </div>
             <div class="title-text-container">
                 <div class="fixed-title">集合啦！年终羽毛球积分赛</div>
-                <h1 class="page-title">个人积分汇总</h1>
+                <h1 class="page-title">个人积分排名汇总</h1>
             </div>
         </div>
         <div class="rank-list" id="rankList">
