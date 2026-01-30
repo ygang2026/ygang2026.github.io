@@ -84,17 +84,33 @@
             }
         }
 
+        /* 移动端核心适配：LOGO在上、文字在下，缩小间距 */
         @media (max-width: 480px) {
             .logo-container {
                 width: 120px; 
                 height: 120px;
+                margin-right: 0;
+                margin-bottom: 8px; /* 关键：缩小LOGO和文字的间距（原15px→8px） */
             }
             .title-bar {
-                flex-direction: column; 
+                flex-direction: column; /* 保持LOGO在上、文字在下 */
+                align-items: center; /* 整体居中 */
             }
-            .logo-container {
-                margin-right: 0;
-                margin-bottom: 15px;
+            /* 标题文字容器适配 */
+            .title-text-container {
+                max-width: 100%;
+                text-align: center;
+                margin-top: 0; /* 额外确保无顶部间距 */
+            }
+            /* 标题字体适配 */
+            .fixed-title {
+                font-size: 18px; /* 适度调整字体大小，保持美观 */
+                text-align: center;
+                margin-bottom: 4px; /* 缩小两行标题的间距 */
+            }
+            .page-title {
+                font-size: 16px;
+                text-align: center;
             }
         }
 
@@ -139,21 +155,6 @@
             background-clip: text;
             color: transparent;
             width: 100%;
-        }
-
-        /* 移动端标题适配 - 恢复原始默认值，仅保留居中 */
-        @media (max-width: 480px) {
-            .title-text-container {
-                max-width: 100%;
-                text-align: center;
-            }
-            .fixed-title {
-                font-size: 20px; /* 恢复移动端原始默认值 */
-                text-align: center;
-            }
-            .page-title {
-                font-size: 18px; /* 恢复移动端原始默认值 */
-            }
         }
 
         .form-item { margin-bottom: 18px; }
