@@ -3,10 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <!-- 微信X5内核核心适配 -->
-    <meta name="renderer" content="webkit">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="referrer" content="no-referrer">
     <title>羽毛球双打计分程序</title>
     <style>
         * { 
@@ -14,8 +10,6 @@
             padding: 0; 
             box-sizing: border-box; 
             font-family: "Helvetica Neue", Arial, sans-serif; 
-            /* 微信触屏点击高亮去除 */
-            -webkit-tap-highlight-color: transparent;
         }
 
         /* 基础配色体系 */
@@ -37,7 +31,7 @@
             margin: 0 auto;
         }
 
-        /* 核心：LOGO容器（恢复原始尺寸） */
+        /* 核心：LOGO容器（放大3倍，调整到左侧） */
         .page { 
             display: none; 
             background: white; 
@@ -45,8 +39,8 @@
             box-shadow: 0 8px 24px rgba(0,0,0,0.08); 
             padding: 20px 15px; 
             margin-bottom: 15px;
-            position: relative; 
-            padding-top: 30px; 
+            position: relative; /* 作为LOGO定位父容器 */
+            padding-top: 30px; /* 调整顶部内边距适配新布局 */
         }
 
         /* 标题栏容器 - 用于LOGO和标题的布局 */
@@ -58,115 +52,81 @@
         }
 
         .logo-container {
-            position: static; 
-            transform: none; 
+            position: static; /* 取消绝对定位，改为流式布局 */
+            transform: none; /* 取消偏移 */
             z-index: 10;
-            /* 恢复LOGO原始尺寸 */
-            width: 240px; 
-            height: 240px; 
-            flex-shrink: 0; 
+            width: 240px; /* 原80px放大3倍 */
+            height: 240px; /* 原80px放大3倍 */
+            flex-shrink: 0; /* 防止LOGO被压缩 */
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden; 
+            overflow: hidden;
             border-radius: 8px;
-            background-color: #fff; 
-            margin-right: 20px; 
+            background-color: #fff; /* 白色背景衬托黑色LOGO */
+            margin-right: 20px; /* 与标题保持间距 */
         }
 
         .logo-img {
-            /* 恢复LOGO原始样式：无放大、无裁剪 */
-            width: 100%; 
+            width: 100%;
             height: 100%;
-            object-fit: cover; 
-            object-position: center; 
-            border-radius: 50%; 
-            transform: none; 
-            transform-origin: center center; 
+            object-fit: contain;
+            object-position: center;
+            /* 核心修改：圆形裁剪 + 保留左侧1/2区域 */
+            /* 1. 先设置圆形裁剪（以中心为圆心） */
+            clip-path: circle(50% at 50% 50%);
+            /* 2. 再叠加矩形裁剪，只保留左侧1/2区域 */
+            clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);
+            /* 如需保留右侧1/2，改为：polygon(50% 0, 100% 0, 100% 100%, 50% 100%) */
+            transform: scale(1); /* 保持原始比例 */
         }
 
-        /* 移动端LOGO适配（恢复原始尺寸） */
+        /* 移动端LOGO适配（同步放大3倍） */
         @media (max-width: 768px) {
             .logo-container {
-                width: 180px; 
+                width: 180px; /* 移动端适当缩小，但仍保持3倍比例 */
                 height: 180px;
             }
         }
 
         @media (max-width: 480px) {
             .logo-container {
-                width: 120px; 
+                width: 120px; /* 小屏进一步缩小 */
                 height: 120px;
             }
             .title-bar {
-                flex-direction: column; 
+                flex-direction: column; /* 小屏改为上下布局 */
             }
             .logo-container {
                 margin-right: 0;
                 margin-bottom: 15px;
             }
-            /* 移动端文字居中适配 */
-            .title-text-container {
-                align-items: center !important;
-                padding-left: 0 !important;
-            }
         }
 
         .page.active { display: block; }
 
-        /* 标题文字容器 - 核心修改：完全居中对齐 */
-        .title-text-container {
-            flex: 3;
-            max-width: 75%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center; /* 水平居中 */
-            text-align: center; /* 文字居中 */
-            padding-left: 0; /* 移除左侧内边距 */
-        }
-
-        /* 第一行固定标题 - 恢复居中对齐 */
-        .fixed-title {
-            font-size: 24px; 
-            font-weight: 700;
-            color: var(--main-black);
-            margin-bottom: 8px;
-            line-height: 1.2;
-            background: linear-gradient(90deg, var(--main-green-dark), var(--main-green));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            text-align: center; /* 文字居中 */
-            width: 100%;
-        }
-
-        /* 第二行页面标题 - 恢复居中对齐 */
+        /* 页面标题：右侧居中显示，与LOGO对齐 */
         .page-title { 
-            font-size: 22px; 
+            font-size: 28px; 
             color: var(--main-black);
-            margin: 0; 
+            margin: 0; /* 重置外边距 */
             text-align: center; /* 文字居中 */
-            font-weight: 600;
+            flex: 1; /* 占据剩余空间 */
+            font-weight: 700;
             background: linear-gradient(90deg, var(--main-green-dark), var(--main-green));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%; /* 与LOGO高度对齐 */
         }
 
-        /* 移动端标题适配 - 保持居中 */
+        /* 移动端标题适配 */
         @media (max-width: 480px) {
-            .title-text-container {
-                max-width: 100%;
-                text-align: center;
-            }
-            .fixed-title {
-                font-size: 20px; 
-                text-align: center;
-            }
             .page-title {
-                font-size: 18px; 
+                font-size: 22px;
                 text-align: center;
             }
         }
@@ -218,8 +178,6 @@
             color: var(--main-black);
             background-color: white;
             transition: border 0.3s ease;
-            /* 微信去除默认样式 */
-            -webkit-appearance: none;
         }
 
         input:focus, select:focus { 
@@ -228,7 +186,7 @@
             box-shadow: 0 0 0 2px rgba(118, 185, 0, 0.1);
         }
 
-        /* 按钮样式：hover替换为active（适配微信触屏） */
+        /* 按钮样式 */
         .btn { 
             padding: 12px 20px; 
             border: none; 
@@ -247,7 +205,7 @@
             box-shadow: 0 4px 8px rgba(118, 185, 0, 0.2);
         }
 
-        .btn-primary:active { /* 替换hover为active */
+        .btn-primary:hover {
             background: linear-gradient(135deg, var(--main-green-dark), var(--main-green));
             box-shadow: 0 6px 12px rgba(118, 185, 0, 0.3);
         }
@@ -258,7 +216,7 @@
             box-shadow: 0 4px 8px rgba(46, 204, 113, 0.2);
         }
 
-        .btn-success:active { /* 替换hover为active */
+        .btn-success:hover {
             background: linear-gradient(135deg, #27AE60, #2ECC71);
         }
 
@@ -268,7 +226,7 @@
             box-shadow: 0 4px 8px rgba(230, 126, 34, 0.2);
         }
 
-        .btn-warning:active { /* 替换hover为active */
+        .btn-warning:hover {
             background: linear-gradient(135deg, #D35400, #E67E22);
         }
 
@@ -278,7 +236,7 @@
             box-shadow: 0 4px 8px rgba(149, 165, 166, 0.2);
         }
 
-        .btn-secondary:active { /* 替换hover为active */
+        .btn-secondary:hover {
             background: linear-gradient(135deg, #7F8C8D, #95A5A6);
         }
 
@@ -292,7 +250,7 @@
             transition: all 0.2s ease; 
         }
 
-        .match-item:active { /* 替换hover为active */
+        .match-item:hover { 
             border-color: var(--main-green);
             box-shadow: 0 4px 12px rgba(118, 185, 0, 0.1);
         }
@@ -424,7 +382,7 @@
             transition: transform 0.2s ease;
         }
 
-        .rank-item:active { /* 替换hover为active */
+        .rank-item:hover {
             transform: translateX(5px);
         }
 
@@ -461,30 +419,26 @@
             font-size: 15px; 
         }
 
-        /* 积分规则输入框样式：微信小屏换行 */
+        /* 积分规则输入框样式 */
         .score-rule-group {
             display: flex;
             gap: 10px;
-            flex-wrap: wrap;
         }
         .score-rule-group input {
             flex: 1;
-            min-width: 120px;
         }
     </style>
 </head>
 <body>
     <!-- 1. 比赛设置屏 -->
     <div class="page active" id="settingPage">
+        <!-- LOGO和标题栏容器 -->
         <div class="title-bar">
             <div class="logo-container">
                 <img src="https://p3-flow-imagex-download-sign.byteimg.com/tos-cn-i-a9rns2rl98/6c7618fdc3c2430c8bc802c9c9673f6f.png~tplv-a9rns2rl98-24:720:720.png?lk3s=8e244e95&rcl=2026013017331989720FACE872A22CF7BC&rrcfp=8a172a1a&x-expires=1770370399&x-signature=Hp4pr0nWdNpvMQUuxIIqLVmY1A4%3D" 
                     alt="集合啦LOGO" class="logo-img">
             </div>
-            <div class="title-text-container">
-                <div class="fixed-title">集合啦！年终羽毛球积分赛</div>
-                <h1 class="page-title">比赛设置</h1>
-            </div>
+            <h1 class="page-title">比赛设置</h1>
         </div>
         <div class="form-item">
             <label class="form-label">赛制选择</label>
@@ -510,10 +464,7 @@
                 <img src="https://p3-flow-imagex-download-sign.byteimg.com/tos-cn-i-a9rns2rl98/6c7618fdc3c2430c8bc802c9c9673f6f.png~tplv-a9rns2rl98-24:720:720.png?lk3s=8e244e95&rcl=2026013017331989720FACE872A22CF7BC&rrcfp=8a172a1a&x-expires=1770370399&x-signature=Hp4pr0nWdNpvMQUuxIIqLVmY1A4%3D" 
                     alt="集合啦LOGO" class="logo-img">
             </div>
-            <div class="title-text-container">
-                <div class="fixed-title">集合啦！年终羽毛球积分赛</div>
-                <h1 class="page-title">手动添加对阵（双打）</h1>
-            </div>
+            <h1 class="page-title">手动添加对阵（双打）</h1>
         </div>
         
         <!-- 左半场队伍 -->
@@ -560,10 +511,7 @@
                 <img src="https://p3-flow-imagex-download-sign.byteimg.com/tos-cn-i-a9rns2rl98/6c7618fdc3c2430c8bc802c9c9673f6f.png~tplv-a9rns2rl98-24:720:720.png?lk3s=8e244e95&rcl=2026013017331989720FACE872A22CF7BC&rrcfp=8a172a1a&x-expires=1770370399&x-signature=Hp4pr0nWdNpvMQUuxIIqLVmY1A4%3D" 
                     alt="集合啦LOGO" class="logo-img">
             </div>
-            <div class="title-text-container">
-                <div class="fixed-title">集合啦！年终羽毛球积分赛</div>
-                <h1 class="page-title">双打左右屏计分</h1>
-            </div>
+            <h1 class="page-title">双打左右屏计分</h1>
         </div>
         <div class="match-list" id="scoreMatchList"></div>
         <button class="btn btn-success" onclick="goToRankPage()">查看个人积分排名</button>
@@ -577,10 +525,7 @@
                 <img src="https://p3-flow-imagex-download-sign.byteimg.com/tos-cn-i-a9rns2rl98/6c7618fdc3c2430c8bc802c9c9673f6f.png~tplv-a9rns2rl98-24:720:720.png?lk3s=8e244e95&rcl=2026013017331989720FACE872A22CF7BC&rrcfp=8a172a1a&x-expires=1770370399&x-signature=Hp4pr0nWdNpvMQUuxIIqLVmY1A4%3D" 
                     alt="集合啦LOGO" class="logo-img">
             </div>
-            <div class="title-text-container">
-                <div class="fixed-title">集合啦！年终羽毛球积分赛</div>
-                <h1 class="page-title">个人积分排名汇总</h1>
-            </div>
+            <h1 class="page-title">个人积分排名汇总</h1>
         </div>
         <div class="rank-list" id="rankList">
             <div class="empty-tip">暂无积分数据，完成对阵计分后显示</div>
@@ -599,17 +544,10 @@
             playerScores: {}
         };
 
-        // 页面切换核心函数（优化微信兼容）
+        // 页面切换核心函数
         function switchPage(pageId) {
-            // 微信强制重绘：先隐藏所有页面，再显示目标页
-            document.querySelectorAll('.page').forEach(page => {
-                page.classList.remove('active');
-                page.style.display = 'none';
-            });
-            const targetPage = document.getElementById(pageId);
-            targetPage.classList.add('active');
-            targetPage.style.display = 'block';
-            
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
             if (pageId === 'matchPage') renderMatchList();
             if (pageId === 'scorePage') renderScoreMatchList();
             if (pageId === 'rankPage') renderRankList();
@@ -786,7 +724,7 @@
                     </div>
                 `;
 
-                // 动态绑定事件（阻止冒泡+微信兼容）
+                // 动态绑定事件（阻止冒泡）
                 document.getElementById(`btnLeft_${m.id}`).onclick = function(e) {
                     e.stopPropagation();
                     addScore('left', m.id);
@@ -966,13 +904,6 @@
                 switchPage('settingPage');
             }
         }
-
-        // 微信初始化（解决首次加载空白/无响应）
-        window.onload = function() {
-            setTimeout(() => {
-                switchPage('settingPage');
-            }, 100);
-        };
     </script>
 </body>
 </html>
