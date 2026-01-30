@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <!-- 微信X5内核核心适配 -->
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="referrer" content="no-referrer">
     <title>羽毛球双打计分程序</title>
     <style>
         * { 
@@ -10,6 +14,8 @@
             padding: 0; 
             box-sizing: border-box; 
             font-family: "Helvetica Neue", Arial, sans-serif; 
+            /* 微信触屏点击高亮去除 */
+            -webkit-tap-highlight-color: transparent;
         }
 
         /* 基础配色体系 */
@@ -31,7 +37,7 @@
             margin: 0 auto;
         }
 
-        /* 核心：LOGO容器（放大3倍，调整到左侧） */
+        /* 核心：LOGO容器（恢复原始尺寸） */
         .page { 
             display: none; 
             background: white; 
@@ -55,28 +61,31 @@
             position: static; 
             transform: none; 
             z-index: 10;
+            /* 恢复LOGO原始尺寸 */
             width: 240px; 
             height: 240px; 
             flex-shrink: 0; 
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            overflow: hidden; 
             border-radius: 8px;
             background-color: #fff; 
             margin-right: 20px; 
         }
 
         .logo-img {
-            width: 100%;
+            /* 恢复LOGO原始样式：无放大、无裁剪 */
+            width: 100%; 
             height: 100%;
-            object-fit: contain;
-            object-position: center;
-            clip-path: circle(75% at 50% 50%); /* 核心修改：3/4比例裁剪（75%） */
-            transform: scale(1); 
+            object-fit: cover; 
+            object-position: center; 
+            border-radius: 50%; 
+            transform: none; 
+            transform-origin: center center; 
         }
 
-        /* 移动端LOGO适配（同步放大3倍） */
+        /* 移动端LOGO适配（恢复原始尺寸） */
         @media (max-width: 768px) {
             .logo-container {
                 width: 180px; 
@@ -96,7 +105,7 @@
                 margin-right: 0;
                 margin-bottom: 15px;
             }
-            /* 移动端文字居中适配 - 修改点1：移除靠左样式，改为居中 */
+            /* 移动端文字居中适配 */
             .title-text-container {
                 align-items: center !important;
                 padding-left: 0 !important;
@@ -105,21 +114,21 @@
 
         .page.active { display: block; }
 
-        /* 标题文字容器 - 核心修改2：改为居中对齐 */
+        /* 标题文字容器 - 核心修改：完全居中对齐 */
         .title-text-container {
             flex: 3;
             max-width: 75%;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            align-items: center; /* 改为居中对齐 */
-            text-align: center; /* 文字居中对齐 */
+            align-items: center; /* 水平居中 */
+            text-align: center; /* 文字居中 */
             padding-left: 0; /* 移除左侧内边距 */
         }
 
-        /* 第一行固定标题 - 修改点3：文字居中对齐 */
+        /* 第一行固定标题 - 恢复居中对齐 */
         .fixed-title {
-            font-size: 24px; /* 恢复原始默认值 */
+            font-size: 24px; 
             font-weight: 700;
             color: var(--main-black);
             margin-bottom: 8px;
@@ -128,16 +137,16 @@
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            text-align: center; /* 改为居中对齐 */
+            text-align: center; /* 文字居中 */
             width: 100%;
         }
 
-        /* 第二行页面标题 - 修改点4：文字居中对齐 */
+        /* 第二行页面标题 - 恢复居中对齐 */
         .page-title { 
-            font-size: 22px; /* 恢复原始默认值 */
+            font-size: 22px; 
             color: var(--main-black);
             margin: 0; 
-            text-align: center; /* 改为居中对齐 */
+            text-align: center; /* 文字居中 */
             font-weight: 600;
             background: linear-gradient(90deg, var(--main-green-dark), var(--main-green));
             -webkit-background-clip: text;
@@ -146,19 +155,19 @@
             width: 100%;
         }
 
-        /* 移动端标题适配 - 修改点5：文字居中对齐 */
+        /* 移动端标题适配 - 保持居中 */
         @media (max-width: 480px) {
             .title-text-container {
                 max-width: 100%;
                 text-align: center;
             }
             .fixed-title {
-                font-size: 20px; /* 恢复移动端原始默认值 */
-                text-align: center; /* 改为居中对齐 */
+                font-size: 20px; 
+                text-align: center;
             }
             .page-title {
-                font-size: 18px; /* 恢复移动端原始默认值 */
-                text-align: center; /* 改为居中对齐 */
+                font-size: 18px; 
+                text-align: center;
             }
         }
 
@@ -209,6 +218,8 @@
             color: var(--main-black);
             background-color: white;
             transition: border 0.3s ease;
+            /* 微信去除默认样式 */
+            -webkit-appearance: none;
         }
 
         input:focus, select:focus { 
@@ -217,7 +228,7 @@
             box-shadow: 0 0 0 2px rgba(118, 185, 0, 0.1);
         }
 
-        /* 按钮样式 */
+        /* 按钮样式：hover替换为active（适配微信触屏） */
         .btn { 
             padding: 12px 20px; 
             border: none; 
@@ -236,7 +247,7 @@
             box-shadow: 0 4px 8px rgba(118, 185, 0, 0.2);
         }
 
-        .btn-primary:hover {
+        .btn-primary:active { /* 替换hover为active */
             background: linear-gradient(135deg, var(--main-green-dark), var(--main-green));
             box-shadow: 0 6px 12px rgba(118, 185, 0, 0.3);
         }
@@ -247,7 +258,7 @@
             box-shadow: 0 4px 8px rgba(46, 204, 113, 0.2);
         }
 
-        .btn-success:hover {
+        .btn-success:active { /* 替换hover为active */
             background: linear-gradient(135deg, #27AE60, #2ECC71);
         }
 
@@ -257,7 +268,7 @@
             box-shadow: 0 4px 8px rgba(230, 126, 34, 0.2);
         }
 
-        .btn-warning:hover {
+        .btn-warning:active { /* 替换hover为active */
             background: linear-gradient(135deg, #D35400, #E67E22);
         }
 
@@ -267,7 +278,7 @@
             box-shadow: 0 4px 8px rgba(149, 165, 166, 0.2);
         }
 
-        .btn-secondary:hover {
+        .btn-secondary:active { /* 替换hover为active */
             background: linear-gradient(135deg, #7F8C8D, #95A5A6);
         }
 
@@ -281,7 +292,7 @@
             transition: all 0.2s ease; 
         }
 
-        .match-item:hover { 
+        .match-item:active { /* 替换hover为active */
             border-color: var(--main-green);
             box-shadow: 0 4px 12px rgba(118, 185, 0, 0.1);
         }
@@ -413,7 +424,7 @@
             transition: transform 0.2s ease;
         }
 
-        .rank-item:hover {
+        .rank-item:active { /* 替换hover为active */
             transform: translateX(5px);
         }
 
@@ -450,13 +461,15 @@
             font-size: 15px; 
         }
 
-        /* 积分规则输入框样式 */
+        /* 积分规则输入框样式：微信小屏换行 */
         .score-rule-group {
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
         }
         .score-rule-group input {
             flex: 1;
+            min-width: 120px;
         }
     </style>
 </head>
@@ -586,10 +599,17 @@
             playerScores: {}
         };
 
-        // 页面切换核心函数
+        // 页面切换核心函数（优化微信兼容）
         function switchPage(pageId) {
-            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
+            // 微信强制重绘：先隐藏所有页面，再显示目标页
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+                page.style.display = 'none';
+            });
+            const targetPage = document.getElementById(pageId);
+            targetPage.classList.add('active');
+            targetPage.style.display = 'block';
+            
             if (pageId === 'matchPage') renderMatchList();
             if (pageId === 'scorePage') renderScoreMatchList();
             if (pageId === 'rankPage') renderRankList();
@@ -766,7 +786,7 @@
                     </div>
                 `;
 
-                // 动态绑定事件（阻止冒泡）
+                // 动态绑定事件（阻止冒泡+微信兼容）
                 document.getElementById(`btnLeft_${m.id}`).onclick = function(e) {
                     e.stopPropagation();
                     addScore('left', m.id);
@@ -946,6 +966,13 @@
                 switchPage('settingPage');
             }
         }
+
+        // 微信初始化（解决首次加载空白/无响应）
+        window.onload = function() {
+            setTimeout(() => {
+                switchPage('settingPage');
+            }, 100);
+        };
     </script>
 </body>
 </html>
