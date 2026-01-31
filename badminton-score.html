@@ -26,7 +26,7 @@
             --main-black: #1A1A1A;
             --main-gray: #F5F5F5;
             --main-gray-dark: #E0E0E0;
-            /* 新增：减分按钮配色 */
+            /* 减分按钮配色 */
             --main-red: #E74C3C;
             --main-red-light: #EC7063;
         }
@@ -257,7 +257,7 @@
             box-shadow: 0 6px 12px rgba(118, 185, 0, 0.3);
         }
 
-        /* 新增：减分按钮样式 */
+        /* 减分按钮样式 */
         .btn-minus {
             background: linear-gradient(135deg, var(--main-red), var(--main-red-light));
             color: white;
@@ -331,10 +331,21 @@
             font-size: 14px; 
             color: var(--main-green-dark);
             font-weight: 500; 
+            text-align: right;
         }
 
         .match-result.finished { 
             color: var(--main-green);
+        }
+
+        /* 新增：小分显示样式 - 放大字体到20px，加粗 */
+        .match-game-scores {
+            font-size: 20px;
+            font-weight: 700;
+            color: #7F8C8D;
+            margin-top: 4px;
+            text-align: right;
+            line-height: 1.4;
         }
 
         .half-team { 
@@ -370,11 +381,16 @@
             margin-top: 12px; 
         }
 
+        /* 优化计分面板布局，适配70px大字体 */
         .score-left-screen, .score-right-screen { 
             flex: 1; 
             background: linear-gradient(135deg, white, var(--main-gray));
             border-radius: 10px; 
             padding: 15px; 
+            min-height: 220px; /* 防止大字体挤压按钮 */
+            display: flex;     /* 弹性布局确保内容不溢出 */
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .score-left-screen { 
@@ -397,11 +413,13 @@
             line-height: 1.3; 
         }
 
+        /* 计分牌数字调大到70px，优化行高 */
         .team-score-current { 
-            font-size: 70px; 
+            font-size: 70px; /* 核心：70号大字体 */
             color: var(--main-green);
             margin: 8px 0; 
             font-weight: 700; 
+            line-height: 1; /* 避免数字过高导致布局挤压 */
         }
 
         .score-right-screen .team-score-current {
@@ -413,7 +431,7 @@
             color: #7F8C8D; 
         }
 
-        /* 新增：加分减分按钮组样式 */
+        /* 加分减分按钮组样式 */
         .score-btn-group-inline {
             display: flex;
             gap: 8px;
@@ -493,6 +511,20 @@
         .score-rule-group input {
             flex: 1;
             min-width: 120px;
+        }
+
+        /* 移动端适配70px大字体 */
+        @media (max-width: 480px) {
+            .team-score-current {
+                font-size: 60px; /* 手机端稍小，避免溢出 */
+            }
+            .score-left-screen, .score-right-screen {
+                min-height: 180px; /* 移动端最小高度适配 */
+            }
+            /* 移动端小分字体适配 */
+            .match-game-scores {
+                font-size: 18px;
+            }
         }
     </style>
 </head>
@@ -688,7 +720,9 @@
                 rightSet: 0,
                 currentScore: { left: 0, right: 0 },
                 isFinished: false,
-                scoreModalActive: false
+                scoreModalActive: false,
+                // 新增：存储每局具体小分（格式：["21-18", "21-16"]）
+                gameScores: []
             };
             globalData.matches.push(newMatch);
             [l1, l2, r1, r2].forEach(player => {
@@ -718,11 +752,18 @@
                     ? `${m.leftSet} - ${m.rightSet}（已完成）`
                     : `0 - 0（未完成）`;
                 const resultClass = m.isFinished ? 'finished' : '';
+                // 新增：格式化小分显示（如"21-18 21-16"）
+                const gameScoresText = m.gameScores.length > 0 ? m.gameScores.join(' ') : '';
+
                 el.innerHTML += `
                     <div class="match-item">
                         <div class="match-header">
                             <div class="match-name">对阵 #${idx+1}</div>
-                            <div class="match-result ${resultClass}">${result}</div>
+                            <div class="match-result-container">
+                                <div class="match-result ${resultClass}">${result}</div>
+                                <!-- 新增：显示具体小分 -->
+                                ${m.isFinished ? `<div class="match-game-scores">${gameScoresText}</div>` : ''}
+                            </div>
                         </div>
                         <div class="half-team">
                             <div class="left-team">左半场：${leftTeam}</div>
@@ -752,14 +793,19 @@
             switchPage('matchPage');
         }
 
-        // 渲染计分对阵列表（防冒泡+事件绑定）
+        // 修复：渲染计分对阵列表（解决第一条对阵点击无效问题）
         function renderScoreMatchList() {
             const el = document.getElementById('scoreMatchList');
             if (globalData.matches.length === 0) {
                 el.innerHTML = '<div class="empty-tip">暂无对阵数据，请先添加</div>';
                 return;
             }
-            el.innerHTML = '';
+            
+            // 先移除之前的事件监听，避免重复绑定
+            el.replaceWith(el.cloneNode(false));
+            const newEl = document.getElementById('scoreMatchList');
+            
+            newEl.innerHTML = '';
             globalData.matches.forEach((m, idx) => {
                 const leftTeam = m.leftTeam.join('+');
                 const rightTeam = m.rightTeam.join('+');
@@ -769,12 +815,29 @@
                 const resultColor = m.isFinished ? "#76B900" : "#E67E22";
                 const modalDisplay = m.scoreModalActive ? 'flex' : 'none';
                 const btnDisplay = m.scoreModalActive ? 'flex' : 'none';
+                // 新增：格式化小分显示
+                const gameScoresText = m.gameScores.length > 0 ? m.gameScores.join(' ') : '';
 
-                el.innerHTML += `
-                    <div class="match-item">
-                        <div class="match-header" onclick="toggleScoreModal('${m.id}')" style="cursor: pointer;">
+                // 为每个对阵项生成唯一的DOM ID（避免冲突）
+                const matchItemId = `matchItem_${m.id}`;
+                const scoreLeftId = `scoreLeft_${m.id}`;
+                const scoreRightId = `scoreRight_${m.id}`;
+                const btnLeftAddId = `btnLeftAdd_${m.id}`;
+                const btnLeftMinusId = `btnLeftMinus_${m.id}`;
+                const btnRightAddId = `btnRightAdd_${m.id}`;
+                const btnRightMinusId = `btnRightMinus_${m.id}`;
+                const btnResetId = `btnReset_${m.id}`;
+                const btnFinishId = `btnFinish_${m.id}`;
+
+                newEl.innerHTML += `
+                    <div class="match-item" id="${matchItemId}">
+                        <div class="match-header" data-match-id="${m.id}" style="cursor: pointer;">
                             <div class="match-name">对阵 #${idx+1}</div>
-                            <div class="match-result" style="color:${resultColor}">${resultText}</div>
+                            <div class="match-result-container">
+                                <div class="match-result ${m.isFinished ? 'finished' : ''}" style="color:${resultColor}">${resultText}</div>
+                                <!-- 新增：显示具体小分 -->
+                                ${m.isFinished ? `<div class="match-game-scores">${gameScoresText}</div>` : ''}
+                            </div>
                         </div>
                         <div class="half-team">
                             <div class="left-team">左半场：${leftTeam}</div>
@@ -788,63 +851,74 @@
                             <div class="score-left-screen">
                                 <div class="team-score-section">
                                     <div class="team-name">${leftTeam}</div>
-                                    <div class="team-score-current" id="scoreLeft_${m.id}">${m.currentScore.left}</div>
+                                    <div class="team-score-current" id="${scoreLeftId}">${m.currentScore.left}</div>
                                     <div class="team-score-set">局分：${m.leftSet}</div>
                                 </div>
-                                <!-- 新增：加分减分按钮组 -->
                                 <div class="score-btn-group-inline">
-                                    <button class="btn score-btn btn-primary" id="btnLeftAdd_${m.id}">左半场加分</button>
-                                    <button class="btn score-btn btn-minus" id="btnLeftMinus_${m.id}">左半场减分</button>
+                                    <button class="btn score-btn btn-primary" data-action="addScore" data-side="left" data-match-id="${m.id}" id="${btnLeftAddId}">加分</button>
+                                    <button class="btn score-btn btn-minus" data-action="minusScore" data-side="left" data-match-id="${m.id}" id="${btnLeftMinusId}">减分</button>
                                 </div>
                             </div>
                             <div class="score-right-screen">
                                 <div class="team-score-section">
                                     <div class="team-name">${rightTeam}</div>
-                                    <div class="team-score-current" id="scoreRight_${m.id}">${m.currentScore.right}</div>
+                                    <div class="team-score-current" id="${scoreRightId}">${m.currentScore.right}</div>
                                     <div class="team-score-set">局分：${m.rightSet}</div>
                                 </div>
-                                <!-- 新增：加分减分按钮组 -->
                                 <div class="score-btn-group-inline">
-                                    <button class="btn score-btn btn-primary" id="btnRightAdd_${m.id}">右半场加分</button>
-                                    <button class="btn score-btn btn-minus" id="btnRightMinus_${m.id}">右半场减分</button>
+                                    <button class="btn score-btn btn-primary" data-action="addScore" data-side="right" data-match-id="${m.id}" id="${btnRightAddId}">加分</button>
+                                    <button class="btn score-btn btn-minus" data-action="minusScore" data-side="right" data-match-id="${m.id}" id="${btnRightMinusId}">减分</button>
                                 </div>
                             </div>
                         </div>
                         <div class="score-btn-group" style="display:${btnDisplay};">
-                            <button class="btn btn-secondary" id="btnReset_${m.id}">重置本局小分</button>
-                            <button class="btn btn-success" id="btnFinish_${m.id}">结束本场对阵</button>
+                            <button class="btn btn-secondary" data-action="resetCurrentSet" data-match-id="${m.id}" id="${btnResetId}">重置本局小分</button>
+                            <button class="btn btn-success" data-action="finishMatch" data-match-id="${m.id}" id="${btnFinishId}">结束本场对阵</button>
                         </div>
                     </div>
                 `;
+            });
 
-                // 动态绑定事件（阻止冒泡+微信兼容）
-                // 加分事件
-                document.getElementById(`btnLeftAdd_${m.id}`).onclick = function(e) {
-                    e.stopPropagation();
-                    addScore('left', m.id);
-                };
-                document.getElementById(`btnRightAdd_${m.id}`).onclick = function(e) {
-                    e.stopPropagation();
-                    addScore('right', m.id);
-                };
-                // 新增：减分事件
-                document.getElementById(`btnLeftMinus_${m.id}`).onclick = function(e) {
-                    e.stopPropagation();
-                    minusScore('left', m.id);
-                };
-                document.getElementById(`btnRightMinus_${m.id}`).onclick = function(e) {
-                    e.stopPropagation();
-                    minusScore('right', m.id);
-                };
-                // 原有事件
-                document.getElementById(`btnReset_${m.id}`).onclick = function(e) {
-                    e.stopPropagation();
-                    resetCurrentSet(m.id);
-                };
-                document.getElementById(`btnFinish_${m.id}`).onclick = function(e) {
-                    e.stopPropagation();
-                    finishMatch(m.id);
-                };
+            // 核心修复：一次性绑定事件委托，确保所有对阵都能响应
+            newEl.addEventListener('click', function(e) {
+                // 找到点击的元素所属的match-id
+                const matchHeader = e.target.closest('.match-header');
+                const btnElement = e.target.closest('[data-action]');
+                
+                // 处理对阵头部点击（展开/收起计分板）
+                if (matchHeader && !btnElement) {
+                    const matchId = matchHeader.getAttribute('data-match-id');
+                    if (matchId) {
+                        e.stopPropagation();
+                        toggleScoreModal(matchId);
+                    }
+                    return;
+                }
+
+                // 处理按钮点击
+                if (btnElement) {
+                    const matchId = btnElement.getAttribute('data-match-id');
+                    const action = btnElement.getAttribute('data-action');
+                    const side = btnElement.getAttribute('data-side');
+                    
+                    if (action && matchId) {
+                        e.stopPropagation();
+                        switch(action) {
+                            case 'addScore':
+                                addScore(side, matchId);
+                                break;
+                            case 'minusScore':
+                                minusScore(side, matchId);
+                                break;
+                            case 'resetCurrentSet':
+                                resetCurrentSet(matchId);
+                                break;
+                            case 'finishMatch':
+                                finishMatch(matchId);
+                                break;
+                        }
+                    }
+                }
             });
         }
 
@@ -866,7 +940,7 @@
             checkSetWinner(match, matchId);
         }
 
-        // 新增：减分核心函数（限制分数≥0）
+        // 减分核心函数（限制分数≥0）
         function minusScore(side, matchId) {
             const match = globalData.matches.find(m => m.id === matchId);
             if (!match || match.isFinished) return;
@@ -891,6 +965,8 @@
             if ((isOver21 && diff >=2) || (isBoth20 && diff >=2)) {
                 const winSide = l > r ? 'left' : 'right';
                 winSide === 'left' ? match.leftSet++ : match.rightSet++;
+                // 新增：存储本局小分（格式："左分-右分"）
+                match.gameScores.push(`${l}-${r}`);
                 match.currentScore = { left: 0, right: 0 };
                 document.getElementById(`scoreLeft_${matchId}`).innerText = 0;
                 document.getElementById(`scoreRight_${matchId}`).innerText = 0;
@@ -921,6 +997,7 @@
             });
 
             renderScoreMatchList();
+            renderMatchList(); // 更新对阵列表的小分显示
             renderRankList();
             alert(`恭喜！${winPlayers.join('+')} 赢得本场对阵！\n胜方每人+${globalData.winScore}分，败方每人+${globalData.loseScore}分`);
         }
@@ -963,6 +1040,7 @@
                 match.isFinished = true;
                 match.scoreModalActive = false;
                 renderScoreMatchList();
+                renderMatchList(); // 更新对阵列表的小分显示
                 renderRankList();
             }
         }
