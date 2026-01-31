@@ -26,6 +26,9 @@
             --main-black: #1A1A1A;
             --main-gray: #F5F5F5;
             --main-gray-dark: #E0E0E0;
+            /* 新增：减分按钮配色 */
+            --main-red: #E74C3C;
+            --main-red-light: #EC7063;
         }
 
         /* 页面底色 */
@@ -254,6 +257,18 @@
             box-shadow: 0 6px 12px rgba(118, 185, 0, 0.3);
         }
 
+        /* 新增：减分按钮样式 */
+        .btn-minus {
+            background: linear-gradient(135deg, var(--main-red), var(--main-red-light));
+            color: white;
+            box-shadow: 0 4px 8px rgba(231, 76, 60, 0.2);
+        }
+
+        .btn-minus:active {
+            background: linear-gradient(135deg, #C0392B, var(--main-red));
+            box-shadow: 0 6px 12px rgba(231, 76, 60, 0.3);
+        }
+
         .btn-success { 
             background: linear-gradient(135deg, #2ECC71, #4CD964);
             color: white;
@@ -383,7 +398,7 @@
         }
 
         .team-score-current { 
-            font-size: 40px; 
+            font-size: 70px; 
             color: var(--main-green);
             margin: 8px 0; 
             font-weight: 700; 
@@ -398,11 +413,17 @@
             color: #7F8C8D; 
         }
 
+        /* 新增：加分减分按钮组样式 */
+        .score-btn-group-inline {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
         .score-btn { 
-            width: 100%; 
+            flex: 1;
             padding: 10px 0; 
             font-size: 15px; 
-            margin-top: 10px; 
         }
 
         .score-btn-group { 
@@ -514,7 +535,7 @@
             </div>
             <div class="title-text-container">
                 <div class="fixed-title">集合啦！年终羽毛球积分赛</div>
-                <h1 class="page-title">手动添加对阵（双打）</h1>
+                <h1 class="page-title">添加对阵表</h1>
             </div>
         </div>
         
@@ -770,7 +791,11 @@
                                     <div class="team-score-current" id="scoreLeft_${m.id}">${m.currentScore.left}</div>
                                     <div class="team-score-set">局分：${m.leftSet}</div>
                                 </div>
-                                <button class="btn score-btn btn-primary" id="btnLeft_${m.id}">左半场加分</button>
+                                <!-- 新增：加分减分按钮组 -->
+                                <div class="score-btn-group-inline">
+                                    <button class="btn score-btn btn-primary" id="btnLeftAdd_${m.id}">左半场加分</button>
+                                    <button class="btn score-btn btn-minus" id="btnLeftMinus_${m.id}">左半场减分</button>
+                                </div>
                             </div>
                             <div class="score-right-screen">
                                 <div class="team-score-section">
@@ -778,7 +803,11 @@
                                     <div class="team-score-current" id="scoreRight_${m.id}">${m.currentScore.right}</div>
                                     <div class="team-score-set">局分：${m.rightSet}</div>
                                 </div>
-                                <button class="btn score-btn btn-primary" id="btnRight_${m.id}">右半场加分</button>
+                                <!-- 新增：加分减分按钮组 -->
+                                <div class="score-btn-group-inline">
+                                    <button class="btn score-btn btn-primary" id="btnRightAdd_${m.id}">右半场加分</button>
+                                    <button class="btn score-btn btn-minus" id="btnRightMinus_${m.id}">右半场减分</button>
+                                </div>
                             </div>
                         </div>
                         <div class="score-btn-group" style="display:${btnDisplay};">
@@ -789,14 +818,25 @@
                 `;
 
                 // 动态绑定事件（阻止冒泡+微信兼容）
-                document.getElementById(`btnLeft_${m.id}`).onclick = function(e) {
+                // 加分事件
+                document.getElementById(`btnLeftAdd_${m.id}`).onclick = function(e) {
                     e.stopPropagation();
                     addScore('left', m.id);
                 };
-                document.getElementById(`btnRight_${m.id}`).onclick = function(e) {
+                document.getElementById(`btnRightAdd_${m.id}`).onclick = function(e) {
                     e.stopPropagation();
                     addScore('right', m.id);
                 };
+                // 新增：减分事件
+                document.getElementById(`btnLeftMinus_${m.id}`).onclick = function(e) {
+                    e.stopPropagation();
+                    minusScore('left', m.id);
+                };
+                document.getElementById(`btnRightMinus_${m.id}`).onclick = function(e) {
+                    e.stopPropagation();
+                    minusScore('right', m.id);
+                };
+                // 原有事件
                 document.getElementById(`btnReset_${m.id}`).onclick = function(e) {
                     e.stopPropagation();
                     resetCurrentSet(m.id);
@@ -824,6 +864,21 @@
             document.getElementById(`scoreLeft_${matchId}`).innerText = match.currentScore.left;
             document.getElementById(`scoreRight_${matchId}`).innerText = match.currentScore.right;
             checkSetWinner(match, matchId);
+        }
+
+        // 新增：减分核心函数（限制分数≥0）
+        function minusScore(side, matchId) {
+            const match = globalData.matches.find(m => m.id === matchId);
+            if (!match || match.isFinished) return;
+            // 防止分数减到负数
+            if (match.currentScore[side] <= 0) {
+                alert("分数不能低于0！");
+                return;
+            }
+            match.currentScore[side]--;
+            document.getElementById(`scoreLeft_${matchId}`).innerText = match.currentScore.left;
+            document.getElementById(`scoreRight_${matchId}`).innerText = match.currentScore.right;
+            // 减分后无需检查胜负，只有加分才需要
         }
 
         // 检查本局胜负（21分制）
